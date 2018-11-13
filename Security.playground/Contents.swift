@@ -11,6 +11,7 @@ MIIEowIBAAKCAQEAo81+4NLKXyrWs9k853t+9kK0u0i8owHO7FRd1SJXCyFDRpcy823YHRydxn84NLkL
 
 let privateKey = RSA.createPrivateKeyFromBase64(b64StringKey)
 
+
 if let generatedKeyData = RSA.generateSecureRandomData() {
     print(generatedKeyData.base64EncodedString())
 }
@@ -28,18 +29,21 @@ if let publicKey = RSA.calculatePublicKey(from: privateKey!) {
 }
 
 if let publicKey = RSA.calculatePublicKey(from: privateKey!) {
-    
+
     let encryptedBytes = RSA.secKeyEncrypt("Data to be encrypted", publicKey: publicKey)
     print("Encrypted String: \(encryptedBytes.base64EncodedString())")
-    
+
     if let result = RSA.secKeyDecrypt(encryptedBytes, privateKey: privateKey!) {
         print(result)
     }
 }
 
-/// Sign data using the private key
 let dataToBeSigned = "Data to be signed".data(using: .utf8)
-if let result = RSA.signData(dataToBeSigned!, with: privateKey!) {
+let key = RSA.generateSecureRandomData()
+if let result = RSA.signData(key!, with: privateKey!) {
     print(result)
 }
 
+if let rawDataSignature = RSA.signRawData(dataToBeSigned!, with: privateKey!) {
+    print(rawDataSignature.count)
+}

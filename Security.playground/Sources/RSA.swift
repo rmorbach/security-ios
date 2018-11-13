@@ -31,7 +31,7 @@ public struct RSA {
      Create an external representation of a key for transmission.
      
      - parameters:
-        - key: Public or Private key
+     - key: Public or Private key
      - returns:
      Base64 representaion of the given key
      - Reference:
@@ -83,7 +83,7 @@ public struct RSA {
      Restores a key from an external representation of that key.
      
      - parameters:
-        - base64String: Base64 encoded representation of a private key
+     - base64String: Base64 encoded representation of a private key
      - returns:
      Private key
      - Reference:
@@ -93,8 +93,7 @@ public struct RSA {
         
         let attributes: [String: Any] = [
             kSecAttrType as String: kSecAttrKeyTypeRSA,
-            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
-            kSecAttrKeySizeInBits as String: 2048
+            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate
         ];
         
         if let cfData = Data(base64Encoded: base64String.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)) {
@@ -112,13 +111,15 @@ public struct RSA {
         return nil
     }
     
+    
+    
     /**
      
      Encrypts a block of plaintext.
      
      - parameters:
-        - data: Raw data to be encrypted
-        - publicKey: Public key encrypt the data
+     - data: Raw data to be encrypted
+     - publicKey: Public key encrypt the data
      - returns:
      Encrypt data
      - Reference:
@@ -145,8 +146,8 @@ public struct RSA {
      Decrypts a block of ciphertext
      
      - parameters:
-        - data: Raw data to be decrypted
-        - privateKey: Private key decrypt the data
+     - data: Raw data to be decrypted
+     - privateKey: Private key decrypt the data
      - returns:
      Plain text     
      - Reference:
@@ -161,6 +162,7 @@ public struct RSA {
         let status = SecKeyDecrypt(privateKey, SecPadding.init(rawValue: 0), dataBytes, dataBytes.count, &plainText, &plainTextLen)
         
         if status == errSecSuccess {
+            print(plainText)
             return String(bytes: plainText, encoding: String.Encoding.utf8)
         } else {
             debugPrint("Failed decrypting data \(status)")
@@ -171,8 +173,8 @@ public struct RSA {
      
      Encrypt data with a given key.
      - parameters:
-        - data: Raw data to be encrypted
-        - with: Public key encrypt the data
+     - data: Raw data to be encrypted
+     - with: Public key encrypt the data
      - returns:
      Encrypted data
      - Reference:
@@ -211,8 +213,8 @@ public struct RSA {
      
      Decrypt data with a given key.
      - parameters:
-        - data: Encrypted data generated from SecKeyCreateEncryptedData
-        - with: Private key to decrypt the data
+     - data: Encrypted data generated from SecKeyCreateEncryptedData
+     - with: Private key to decrypt the data
      - returns:
      Decrypted data
      - Reference:
@@ -242,8 +244,8 @@ public struct RSA {
      
      Creates the cryptographic signature for a block of data using a private key and specified algorithm.
      - parameters:
-        - data: Block of data to be signed
-        - with: Private key to sign the block
+     - data: Block of data to be signed
+     - with: Private key to sign the block
      - returns:
      Base 64 encoded string of the signature.
      - Reference:
@@ -269,11 +271,61 @@ public struct RSA {
         return dt.base64EncodedString()
     }
     
+    
+    /**
+     
+     Creates the cryptographic signature for a block of data using a private key. This method does not apply any hashing to the data before signing-it
+     - parameters:
+     - data: Block of data to be signed
+     - with: Private key to sign the block
+     - returns:
+     Signature data
+     - Reference:
+     [SecKeyRawSign](https://developer.apple.com/documentation/security/1618025-seckeyrawsign)
+     */
+    public static func signRawData(_ data: Data, with privateKey: SecKey) -> Data? {
+        
+        var signature = [UInt8](repeating: 0, count: SecKeyGetBlockSize(privateKey))
+        let dataToSign = [UInt8](data)
+        var signatureLen = SecKeyGetBlockSize(privateKey)
+        
+        let status = SecKeyRawSign(privateKey, SecPadding.PKCS1SHA1, dataToSign, data.count, &signature, &signatureLen)
+        if status == errSecSuccess {
+            let dt = Data(bytes: dataToSign)
+            return dt
+        } else {
+            print("failed signing")
+        }
+        return nil
+    }
+    
+    /**
+     
+     Verifies a digital signature created with SecKeyRawSign
+     - parameters:
+     - data: Signed data
+     - signature: Generated signature
+     - with: Public key to sign the block
+     - returns:
+     Base 64 encoded string of the signature.
+     - Reference:
+     [SecKeyRawVerify](https://developer.apple.com/documentation/security/1617884-seckeyrawverify)
+     */
+    public static func verifyRawSignData(_ data: Data, signature: Data, with publicKey: SecKey) -> Data? {
+        
+        let signedData = [UInt8](data)
+        let signatureData = [UInt8](signature)        
+        let result = SecKeyRawVerify(publicKey, SecPadding.PKCS1SHA1, signedData, signedData.count, signatureData, signatureData.count)
+        print("Verify result \(result)")
+        
+        return nil
+    }
+    
     /**
      
      Gets the public key associated with the given private key.
      - parameters:
-        - from: Private key to calculate the public one
+     - from: Private key to calculate the public one
      - returns:
      The public key corresponding to the given private key.
      - Reference:
@@ -282,5 +334,5 @@ public struct RSA {
     public static func calculatePublicKey(from privateKey: SecKey) -> SecKey? {
         return SecKeyCopyPublicKey(privateKey)
     }
-
+    
 }
