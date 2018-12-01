@@ -19,8 +19,8 @@ if let generatedKeyData = RSA.generateSecureRandomData() {
  RSA.createAssimetricKeyPair()
 
 if let publicKey = RSA.calculatePublicKey(from: privateKey!) {
-    if let encryptedData = RSA.encrypt(data: "Data to be encrypted", with: publicKey) {
-        if let result = RSA.decrypt(data: encryptedData, with: privateKey!) {
+    if let encryptedData = RSA.encrypt(data: "Data to be encrypted", withPublicKey: publicKey) {
+        if let result = RSA.decrypt(data: encryptedData, withPrivateKey: privateKey!) {
             debugPrint(String(data: result, encoding: String.Encoding.utf8)!)
         }
     }
@@ -30,20 +30,20 @@ if let publicKey = RSA.calculatePublicKey(from: privateKey!) {
 
 if let publicKey = RSA.calculatePublicKey(from: privateKey!) {
 
-    let encryptedBytes = RSA.secKeyEncrypt("Data to be encrypted", publicKey: publicKey)
+    let encryptedBytes = RSA.secKeyEncrypt("Data to be encrypted", withPublicKey: publicKey)
     print("Encrypted String: \(encryptedBytes.base64EncodedString())")
 
-    if let result = RSA.secKeyDecrypt(encryptedBytes, privateKey: privateKey!) {
+    if let result = RSA.secKeyDecrypt(encryptedBytes, withPrivateKey: privateKey!) {
         print(result)
     }
 }
 
 let dataToBeSigned = "Data to be signed".data(using: .utf8)
 let key = RSA.generateSecureRandomData()
-if let result = RSA.sign(data: key!, with: privateKey!) {
+if let result = RSA.sign(data: key!, withPrivateKey: privateKey!) {
     print(result)
 }
 
-if let rawDataSignature = RSA.signRaw(data: dataToBeSigned!, with: privateKey!) {
+if let rawDataSignature = RSA.signRaw(data: dataToBeSigned!, withPrivateKey: privateKey!) {
     print(rawDataSignature.count)
 }

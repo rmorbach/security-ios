@@ -124,7 +124,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyEncrypt](https://developer.apple.com/documentation/security/1617956-seckeyencrypt)
      */
-    public static func secKeyEncrypt(_ data: String, publicKey: SecKey) -> Data {
+    public static func secKeyEncrypt(_ data: String, withPublicKey publicKey: SecKey) -> Data {
         
         var cipherLen = SecKeyGetBlockSize(publicKey)
         var cipherText = [UInt8](repeating: 0, count: cipherLen)
@@ -151,7 +151,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyDecrypt](https://developer.apple.com/documentation/security/1617894-seckeydecrypt)
      */
-    public static func secKeyDecrypt(_ data: Data, privateKey: SecKey) -> String? {
+    public static func secKeyDecrypt(_ data: Data, withPrivateKey privateKey: SecKey) -> String? {
         
         var plainTextLen = SecKeyGetBlockSize(privateKey)
         var plainText = [UInt8](repeating: 0, count: plainTextLen)
@@ -180,7 +180,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyCreateEncryptedData](https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/storing_keys_as_data)
      */
-    public static func encrypt(data toBeEncrypted: String, with publicKey: SecKey) -> Data? {
+    public static func encrypt(data toBeEncrypted: String, withPublicKey publicKey: SecKey) -> Data? {
         
         let size = SecKeyGetBlockSize(publicKey)
         debugPrint(size)
@@ -222,7 +222,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyCreateDecryptedData](https://developer.apple.com/documentation/security/1644043-seckeycreatedecrypteddata)
      */
-    public static func decrypt(data encryptedData: Data, with privateKey: SecKey) -> Data? {
+    public static func decrypt(data encryptedData: Data, withPrivateKey privateKey: SecKey) -> Data? {
         
         let algorithm = SecKeyAlgorithm.rsaEncryptionPKCS1
         
@@ -255,7 +255,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyCreateSignature](https://developer.apple.com/documentation/security/1643916-seckeycreatesignature)
      */
-    public static func sign(data: Data, with privateKey: SecKey) -> String? {
+    public static func sign(data: Data, withPrivateKey privateKey: SecKey) -> String? {
         
         let algorithm = SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA1
         
@@ -289,7 +289,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyRawSign](https://developer.apple.com/documentation/security/1618025-seckeyrawsign)
      */
-    public static func signRaw(data: Data, with privateKey: SecKey) -> Data? {
+    public static func signRaw(data: Data, withPrivateKey privateKey: SecKey) -> Data? {
         
         var signature = [UInt8](repeating: 0, count: SecKeyGetBlockSize(privateKey))
         let dataToSign = [UInt8](data)
@@ -319,7 +319,7 @@ public struct RSA {
      - SeeAlso:
      [SecKeyRawVerify](https://developer.apple.com/documentation/security/1617884-seckeyrawverify)
      */
-    public static func verifyRawSign(data: Data, signature: Data, with publicKey: SecKey) -> OSStatus {
+    public static func verifyRawSign(data: Data, signature: Data, andPublicKey publicKey: SecKey) -> OSStatus {
         
         let signedData = [UInt8](data)
         let signatureData = [UInt8](signature)        
