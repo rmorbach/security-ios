@@ -1,21 +1,21 @@
 import Foundation
 import Security
 
-// Methods are based on https://developer.apple.com/library/archive/documentation/Security/Conceptual/cryptoservices/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011172
+/// Methods are based on https://developer.apple.com/library/archive/documentation/Security/Conceptual/cryptoservices/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011172
 public struct RSA {
     
     /**
-     
      Many encryption algorithms rely on cryptographically strong pseudorandom numbers.
-     - returns:
-     Generate random data
-     - Reference:
-     [SecRandomCopyBytes](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)
      
+     - Returns:
+     Generate random data
+     
+     - SeeAlso:
+     [SecRandomCopyBytes](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)
      */
-    public static func generateSecureRandomData() -> Data? {
+    public static func generateSecureRandomData(length: Int = 16) -> Data? {
         
-        var bts = [UInt8](repeating: 0, count: 16)
+        var bts = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, bts.count, &bts)
         if status == errSecSuccess {
             print(bts)
@@ -30,11 +30,11 @@ public struct RSA {
      
      Create an external representation of a key for transmission.
      
-     - parameters:
-     - key: Public or Private key
-     - returns:
-     Base64 representaion of the given key
-     - Reference:
+     - Parameters:
+        - key: Public or Private key
+     - Returns:
+     Base64 representaion of the given key     
+     - SeeAlso:
      [Storing Keys as Data](https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/storing_keys_as_data)
      */
     private static func convertKeyToBase64String(key: SecKey) -> String? {
@@ -52,9 +52,10 @@ public struct RSA {
     /**
      Create an assimetric ley pair, but does not store the private one in the keychain.
      
-     - returns:
+     - Note: Keys created from this method are not stored on the Keychain.
+     - Returns:
      Generated Private Key
-     - Reference:
+     - SeeAlso:
      [Generate Keys](https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/generating_new_cryptographic_keys#2863927)
      */
     public static func createAssimetricKeyPair() -> SecKey? {
@@ -79,17 +80,16 @@ public struct RSA {
     }
     
     /**
+     Restores a key from an external representation of it (Base64 encoded String).
      
-     Restores a key from an external representation of that key.
-     
-     - parameters:
-     - base64String: Base64 encoded representation of a private key
-     - returns:
+     - Parameters:
+        - base64String: Base64 encoded representation of a private key
+     - Returns:
      Private key
-     - Reference:
+     - SeeAlso:
      [SecKeyCreateWithData](https://developer.apple.com/documentation/security/1643701-seckeycreatewithdata)
      */
-    public static func createPrivateKeyFromBase64(_ base64String: String) -> SecKey? {
+    public static func createPrivateKey(from base64String: String) -> SecKey? {
         
         let attributes: [String: Any] = [
             kSecAttrType as String: kSecAttrKeyTypeRSA,
@@ -114,15 +114,14 @@ public struct RSA {
     
     
     /**
-     
      Encrypts a block of plaintext.
      
-     - parameters:
-     - data: Raw data to be encrypted
-     - publicKey: Public key encrypt the data
-     - returns:
+     - Parameters:
+        - data: Raw data to be encrypted
+        - publicKey: Public key encrypt the data
+     - Returns:
      Encrypt data
-     - Reference:
+     - SeeAlso:
      [SecKeyEncrypt](https://developer.apple.com/documentation/security/1617956-seckeyencrypt)
      */
     public static func secKeyEncrypt(_ data: String, publicKey: SecKey) -> Data {
@@ -142,15 +141,14 @@ public struct RSA {
     }
     
     /**
-     
      Decrypts a block of ciphertext
      
-     - parameters:
-     - data: Raw data to be decrypted
-     - privateKey: Private key decrypt the data
-     - returns:
+     - Parameters:
+        - data: Raw data to be decrypted
+        - privateKey: Private key decrypt the data
+     - Returns:
      Plain text     
-     - Reference:
+     - SeeAlso:
      [SecKeyDecrypt](https://developer.apple.com/documentation/security/1617894-seckeydecrypt)
      */
     public static func secKeyDecrypt(_ data: Data, privateKey: SecKey) -> String? {
@@ -170,14 +168,16 @@ public struct RSA {
         }
     }
     /**
+     Encrypt data with a given public RSA key.
      
-     Encrypt data with a given key.
-     - parameters:
-     - data: Raw data to be encrypted
-     - with: Public key encrypt the data
-     - returns:
+     - Note:
+        This method uses PKCS #1 as encrypting algorithm.
+     - Parameters:
+        - data: Raw data to be encrypted
+        - publicKey: Public key encrypt the data
+     - Returns:
      Encrypted data
-     - Reference:
+     - SeeAlso:
      [SecKeyCreateEncryptedData](https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/storing_keys_as_data)
      */
     public static func encrypt(data toBeEncrypted: String, with publicKey: SecKey) -> Data? {
@@ -210,14 +210,16 @@ public struct RSA {
     }
     
     /**
-     
      Decrypt data with a given key.
-     - parameters:
-     - data: Encrypted data generated from SecKeyCreateEncryptedData
-     - with: Private key to decrypt the data
-     - returns:
+     
+     - Note:
+     This method assumes data has been encrypted using PKCS #1 as encrypting algorithm.
+     - Parameters:
+        - data: Encrypted data generated from SecKeyCreateEncryptedData
+        - privateKey: Private key to decrypt the data
+     - Returns:
      Decrypted data
-     - Reference:
+     - SeeAlso:
      [SecKeyCreateDecryptedData](https://developer.apple.com/documentation/security/1644043-seckeycreatedecrypteddata)
      */
     public static func decrypt(data encryptedData: Data, with privateKey: SecKey) -> Data? {
@@ -241,17 +243,19 @@ public struct RSA {
     }
     
     /**
-     
      Creates the cryptographic signature for a block of data using a private key and specified algorithm.
-     - parameters:
-     - data: Block of data to be signed
-     - with: Private key to sign the block
-     - returns:
+     
+     - Note:
+     This method uses PKCS #1 as encrypting algorithm and SHA1 for hashing.
+     - Parameters:
+        - data: Block of data to be signed
+        - privateKey: Private key to sign the block
+     - Returns:
      Base 64 encoded string of the signature.
-     - Reference:
+     - SeeAlso:
      [SecKeyCreateSignature](https://developer.apple.com/documentation/security/1643916-seckeycreatesignature)
      */
-    public static func signData(_ data: Data, with privateKey: SecKey) -> String? {
+    public static func sign(data: Data, with privateKey: SecKey) -> String? {
         
         let algorithm = SecKeyAlgorithm.rsaSignatureDigestPKCS1v15SHA1
         
@@ -273,17 +277,19 @@ public struct RSA {
     
     
     /**
-     
      Creates the cryptographic signature for a block of data using a private key. This method does not apply any hashing to the data before signing-it
-     - parameters:
-     - data: Block of data to be signed
-     - with: Private key to sign the block
-     - returns:
-     Signature data
-     - Reference:
+     
+     - Note:
+        Standard ASN.1 padding will be done, as well as PKCS1 padding of the underlying RSA operation.
+     - Parameters:
+        - data: Block of data to be signed
+        - privateKey: Private key to sign the block
+     - Returns:
+     Signed data.
+     - SeeAlso:
      [SecKeyRawSign](https://developer.apple.com/documentation/security/1618025-seckeyrawsign)
      */
-    public static func signRawData(_ data: Data, with privateKey: SecKey) -> Data? {
+    public static func signRaw(data: Data, with privateKey: SecKey) -> Data? {
         
         var signature = [UInt8](repeating: 0, count: SecKeyGetBlockSize(privateKey))
         let dataToSign = [UInt8](data)
@@ -300,35 +306,35 @@ public struct RSA {
     }
     
     /**
-     
      Verifies a digital signature created with SecKeyRawSign
-     - parameters:
-     - data: Signed data
-     - signature: Generated signature
-     - with: Public key to sign the block
-     - returns:
-     Base 64 encoded string of the signature.
-     - Reference:
+     
+     - Note:
+     Standard ASN.1 padding will be done, as well as PKCS1 padding of the underlying RSA operation.
+     - Parameters:
+        - data: Signed data
+        - signature: Generated signature
+        - publicKey: Public key to sign the block
+     - Returns:
+     The operation result.
+     - SeeAlso:
      [SecKeyRawVerify](https://developer.apple.com/documentation/security/1617884-seckeyrawverify)
      */
-    public static func verifyRawSignData(_ data: Data, signature: Data, with publicKey: SecKey) -> Data? {
+    public static func verifyRawSign(data: Data, signature: Data, with publicKey: SecKey) -> OSStatus {
         
         let signedData = [UInt8](data)
         let signatureData = [UInt8](signature)        
         let result = SecKeyRawVerify(publicKey, SecPadding.PKCS1SHA1, signedData, signedData.count, signatureData, signatureData.count)
-        print("Verify result \(result)")
-        
-        return nil
+        return result
     }
     
     /**
-     
      Gets the public key associated with the given private key.
-     - parameters:
-     - from: Private key to calculate the public one
-     - returns:
+     
+     - Parameters:
+        - privateKey: Private key to calculate the public one
+     - Returns:
      The public key corresponding to the given private key.
-     - Reference:
+     - SeeAlso:
      [SecKeyCopyPublicKey](https://developer.apple.com/documentation/security/1643774-seckeycopypublickey)
      */
     public static func calculatePublicKey(from privateKey: SecKey) -> SecKey? {
