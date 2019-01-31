@@ -50,7 +50,7 @@ public struct RSA {
     }
     
     /**
-     Create an assimetric ley pair, but does not store the private one in the keychain.
+     Create an asymmetric key pair, but does not store the private one in the keychain.
      
      - Note: Keys created from this method are not stored on the Keychain.
      - Returns:
@@ -58,7 +58,7 @@ public struct RSA {
      - SeeAlso:
      [Generate Keys](https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/generating_new_cryptographic_keys#2863927)
      */
-    public static func createAssimetricKeyPair() -> SecKey? {
+    public static func createAsymmetricKeyPair() -> SecKey? {
         
         let attributes: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeRSA as String,
                                          kSecAttrKeySizeInBits as String: 2048,
@@ -201,7 +201,7 @@ public struct RSA {
         //This function first create a symmetric key using AES, then encrypt the data using this key, then encrypt the key using RSA public key provided, and, at last, and assemble a block of data composed by (RSA encrypted session key (AES) + the AES encrypted data + 16-byte AES-GCM tag)
         guard let result = SecKeyCreateEncryptedData(publicKey, algorithm, dt as CFData, &error) else {
             let err = error!.takeRetainedValue() as Error
-            debugPrint(err)
+            debugPrint(err)            
             return nil
         }
         
